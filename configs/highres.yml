@@ -1,0 +1,88 @@
+dataset:
+  train:  # LMDB
+    type: OVQEDataset
+
+    root: data/train_108/
+    gt_folder: highres/gt/
+    lq_folder: highres/lq
+    pd_folder: highres/pd
+
+    # mvr_folder: train_108/QP_37/mvr
+    # mvg_folder: train_108/QP_37/mvg
+    # mvb_folder: train_108/QP_37/mvb
+    # pm_folder: train_108/QP_37/pm
+    # rm_folder: train_108/QP_37/rm
+    
+
+    # for dataset lmdb
+    gt_path: QP37_gt.lmdb
+    lq_path: QP37_lq.lmdb
+    pd_path: QP37_pd.lmdb
+
+    # mvr_path: QP37_mvr.lmdb
+    # mvg_path: QP37_mvg.lmdb
+    # mvb_path: QP37_mvb.lmdb
+    # pm_path: QP37_pm.lmdb
+    # rm_path: QP37_rm.lmdb
+    
+    meta_info_fp: meta_info.txt
+
+    gt_size: 64  # ground truth patch size: gt_size * gt_size
+    use_flip: True
+    use_rot: True  # rotation per 90 degrees
+    random_reverse: False
+
+    # for datasampler
+    enlarge_ratio: 300  # enlarge dataset by randomly cropping.
+
+    # for dataloader
+    num_worker_per_gpu: 12  # 12 in total. mainly affect IO speed
+    batch_size_per_gpu: 16  # bs=8, divided by 1 GPUs
+  val:  # Disk IO
+    type: OVQEDataset
+    #root: /media/x/Database/MFQEv2/
+    gt_path: test_18/raw/
+    lq_path: test_18/HM16.5_LDP/QP37/
+    #meta_info_fp: meta_info.txt
+    #enlarge_ratio: 1
+    #use_flip: False
+    #use_rot: False
+    #random_reverse: False
+
+  test:
+    type: OVQEDataset
+    gt_path: test_18/raw/
+    lq_path: test_18/HM16.5_LDP/QP37/
+
+network:
+  radius: 7   # total num of input frame = 2 * radius + 1
+
+train:
+  exp_name: ckp_  # default: timestr. None: ~
+  random_seed: 7
+  pre-val: False  # evaluate criterion before training, e.g., ori PSNR
+  num_iter: !!float 4e5
+  interval_print: !!float 100
+  interval_val: !!float 1e+3  # also save model
+  pbar_len: 100
+
+  optim:
+    type: Adam
+    lr: !!float 1e-4  # init lr of scheduler
+    betas: [0.9, 0.999]
+    eps: !!float 1e-08
+
+  scheduler:
+    is_on: True
+    type: CosineAnnealingRestartLR
+    periods: [!!float 5e+4, !!float 5e+4, !!float 5e+4, !!float 5e+4, !!float 5e+4, !!float 5e+4]  # epoch interval
+    restart_weights: [1, 0.5, 0.5, 0.5, 0.5, 0.5]
+    eta_min: !!float 1e-7
+
+  loss:
+    type: CharbonnierLoss
+    eps: !!float 1e-6
+
+  criterion:
+    type: PSNR
+    unit: dB

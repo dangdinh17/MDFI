@@ -1,0 +1,91 @@
+dataset:
+  enc_type: VTM_Encode
+  train:  # LMDB
+    type: OVQEDataset
+    
+    root: data/train_108
+    gt_folder: raw
+    lq_folder: lq
+    pd_folder: pd
+
+    # for dataset lmdb
+    gt_path: gt.lmdb
+    lq_path: lq.lmdb
+    pd_path: pd.lmdb
+    
+    meta_info_fp: meta_info.txt
+    gt_size: 128  # ground truth patch size: gt_size * gt_size
+    use_flip: True
+    use_rot: True  # rotation per 90 degrees
+    random_reverse: False
+
+    # for datasampler
+    enlarge_ratio: 300  # enlarge dataset by randomly cropping.
+
+    # for dataloader
+    num_worker_per_gpu: 12  # 12 in total. mainly affect IO speed
+    batch_size_per_gpu: 2  # bs=8, divided by 1 GPUs
+  val:  # Disk IO
+    type: OVQEDataset
+    root: data/val_18_15
+    gt_path: gt
+    lq_path: lq
+    pd_path: pd
+
+  test:
+    type: OVQEDataset
+    gt_path: test_18/raw/
+    lq_path: test_18/HM16.5_LDP/QP37/
+
+network:
+  hyper:
+    in_nc: 7
+    nf: 32
+    out_nc: 64
+    nb: 5
+    cpu_cache_length: 20
+    num_sft: 16
+  radius: 7   # total num of input frame = 2 * radius + 1
+
+QP: 37
+AMP: True
+
+train:
+  exp_name: MDFI_1_QP37 # default: timestr. None: ~
+  random_seed: 7
+  pre-val: False  # evaluate criterion before training, e.g., ori PSNR
+  num_iter: !!float 4e5
+  interval_print: !!float 100
+  interval_val: !!float 1000 # also save model
+  pbar_len: 100
+  load_best_weight: None #weigt path or None
+  checkpoint: exp/MDFI_1_QP37/last_weight.pth
+  load_best_ovqe: exp/QVQE_QP37/best_weight.pth
+  optim:
+    type: Adam
+    lr: !!float 1e-4  # init lr of scheduler
+    betas: [0.9, 0.999]
+    eps: !!float 1e-08
+
+  scheduler:
+    is_on: False
+    type: CosineAnnealingRestartLR
+    periods: [!!float 5e+4, !!float 5e+4, !!float 5e+4, !!float 5e+4, !!float 5e+4, !!float 5e+4]  # epoch interval
+    restart_weights: [1, 0.5, 0.5, 0.5, 0.5, 0.5]
+    eta_min: !!float 1e-7
+
+  loss:
+    type: CharbonnierLoss
+    eps: !!float 1e-6
+
+  criterion:
+    type: PSNR
+    unit: dB
+
+comet_logging:
+  using: True
+  previous_experiment: False 
+  # previous_experiment: 5da651f2112748dc8185206791b67c2a
+  api_key: mkfmxVIjacb8h74qKO6NzPdPN # your comet api key
+  project_name: ovqe-project
+  workspace: dangdinh17
