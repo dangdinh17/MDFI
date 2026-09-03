@@ -1,7 +1,7 @@
-# MDFI
+<!-- # MDFI
 The official Pytorch implementation of "MDFI: A Multi-Domain Features Integration for Video Quality Enhancement from Versatile Video Coding"
 
-The official code and dataset will be abvailable when the research is accepted.
+The official code and dataset will be abvailable when the research is accepted. -->
 
 # *MDFI: A Multi-Domain Features Integration for Video Quality Enhancement from Versatile Video Coding*
 
@@ -65,4 +65,4 @@ If you find this project is useful for your research, please cite:
 ```
 
 ## Acknowledgements
-This work is based on [STDF-Pytoch](https://github.com/RyanXingQL/STDF-PyTorch). Thank [RyanXingQL](https://github.com/RyanXingQL)  for sharing the codes.
+This work is based on [OVQE](https://github.com/pengliuhan/OVQE). Thank [Pengliuhan](https://github.com/pengliuhan) for sharing the codes.
